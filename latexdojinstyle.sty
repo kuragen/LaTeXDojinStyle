@@ -1,0 +1,541 @@
+\NeedsTeXFormat{pLaTeX2e}
+\ProvidesPackage{latexdojinstyle}%
+		 [2021/06/13 縦組み汎用サイズ同人誌用スタイルシート Ver.0.1]
+% 用法・要領を守って正しくお使いください
+% トニイさんという方が1999年に発表された「B6判・文庫本(A6判)スタイルオプション」が元です(が
+% もはや発表元の@niftyフォーラムが消滅しておりますので下記をご紹介しておきます)
+% http://irusuka.sakura.ne.jp/archive/2008/06/tex_2.html
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%判型、印刷範囲サイズ設定（分からない人は単位mm指定のままでOK）
+%縦横サイズの入れ替え、変形サイズの設定も可能です。
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newlength{\dansaiwidth}
+\newlength{\dansaiheight}
+\newlength{\shiagariwidth}
+\newlength{\shiagariheight}
+\newlength{\honbunwidth}
+\newlength{\honbunheight}
+\newlength{\kobayohaku}
+
+\setlength{\paperwidth}{154mm}	% 印刷所から指定された、遊びを含めた原稿指定サイズ幅
+\setlength{\paperheight}{216mm}	% 印刷所から指定された、遊びを含めた原稿指定サイズ高さ
+\setlength{\honbunwidth}{125mm}	% テキスト本文サイズ幅
+\setlength{\honbunheight}{187mm}	% テキスト本文サイズ高さ
+\setlength{\dansaiwidth}{3mm	}	% 断裁用左右余白幅
+\setlength{\dansaiheight}{3mm}	% 断裁用上下余白高さ
+\setlength{\kobayohaku}{9mm}	% 木端側の余白サイズ
+\setlength{\headsep}{3mm}		% 柱と本文との空き
+\setlength{\headheight}{5mm}		% 柱の高さ
+\setlength{\oddsidemargin}{10mm}	% 奇数頁マージンサイズ
+\evensidemargin\oddsidemargin	% 左右ページで同じ長さのマージンを取る
+\topmargin=-1in%
+\advance\topmargin by 10mm% 		上余白 -1inch+10mm
+\footskip=5mm%% 			一応フッターの幅を確保
+
+\shiagariwidth=\paperwidth
+\advance\shiagariwidth by -\dansaiwidth
+\advance\shiagariwidth by -\dansaiwidth
+\shiagariheight=\paperheight
+\advance\shiagariheight by -\dansaiheight
+\advance\shiagariheight by -\dansaiheight
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%必要パッケージ読み込み
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{geometry}
+\usepackage[dvipdfmx]{graphicx,xcolor}	% PDF用
+\usepackage{pxatbegshi} % 縦組だとatbegshiでエラーが出るのを回避する
+\usepackage{pxrubrica}	% from http://qiita.com/zr_tex8r/items/42466cbcbeb670a3a2dc 美しい縦書きルビを振るパッケージ
+\usepackage{titlesec}	% 見出しのレイアウト変更を行うパッケージ
+%\usepackage{tocloft}	% 目次の体裁を変更できる
+%\usepackage{wallpaper} % 壁紙を作るやつ
+
+\usepackage{lipsum}	% ダミーテキスト作成パッケージ
+
+%脚注スタイルパッケージ
+\usepackage{pxftnright}	% 縦組みpLaTeX用美しい脚注・傍注パッケージ
+\usepackage{endnotesj}	% 文末脚注スタイル
+\let\footnote=\endnote	% これで脚注が文末脚注になる（傍注の場合は行をコメントアウトでOK）
+\usepackage{warichu}	% 割注利用
+
+%図表・段組等を利用した変形レイアウト作成パッケージ
+\usepackage{wrapfig}	% 図の回り込み用
+\usepackage{picinpar}	% 文章中に枠を設けて図表を入れ込むパッケージ（非推奨のよう。picinsが推奨っぽい）
+\usepackage[subrefformat=parens]{subcaption}	%図を並べて複数挿入
+\usepackage{url}		% URLを直書きできる
+\usepackage{multicol}	% 段組みスタイル
+
+%フォント関係パッケージ
+\usepackage[deluxe]{otf}% OTFフォント使用
+\usepackage[utf8]{inputenc}% 欧文文字コードをUTF8で読む
+\usepackage{type1ec}	% 欧文のリガチャ可能フォント利用時、適当なフォントサイズが用意されてない時に拡大縮小する
+\usepackage{lmodern}	% 欧文フォントをLatin Modernフォントにする
+\usepackage[T1]{fontenc}% フォントファイルのエンコーディングをT1エンコーディングにする（アクセント符号なんかに必要）
+\usepackage{textcomp}
+\usepackage{ascmac}
+
+%表調整パッケージ
+\usepackage{multirow}	%表のレイアウト調整
+\usepackage{longtable}	%頁またぎの表作成
+%\setlength{\baselineskip}{6.375mm}%				行送り間隔
+
+\@ifundefined{chapter}{\@latex@error{%
+		(j,t)articleクラスでは使用できない}\@ehd}{}
+\@ifundefined{if@mainmatter}{\newif\if@mainmatter\@mainmattertrue}{}
+\newif\if@Y@K@%%		横組みか縦組みか判別するフラグ
+\@ifundefined{if@rotsw}{\@Y@K@true}{\@Y@K@false}%
+\newif\if@alone@chapter%	章見出しを単独ページにするフラグ
+\@alone@chapterfalse%		デフォルトは偽
+\@ifundefined{rensuji}{\def\rensuji#1{#1}}{}%
+\DeclareOption{alonechapter}{\@alone@chaptertrue}% 章見出しを単独ページに
+\DeclareOption{9pt}{\if@Y@K@ \input{jsize9.sty}%	横組み
+					  \else \input{tsize9.sty}\fi}% 縦組み
+%
+\ExecuteOptions{B6}%		B6判(四六判/叢書)サイズ
+\ProcessOptions\relax%
+%%	余白などの設定
+\if@Y@K@%					横組み
+%  \headsep=5mm% 			柱と本文との空き
+  \if@twoside
+%	\advance\oddsidemargin by 20mm%		奇数ページの左余白 17mm(ノド？)
+%	\advance\evensidemargin by 13mm%	偶数ページの左余白 10mm(小口？)
+  \else% if not twoside
+%	\advance\oddsidemargin by 16.5mm%	ページの左余白 13.5mm
+%	\evensidemargin\oddsidemargin%		不要かも？
+  \fi
+\else%						縦組み
+%  \headsep=6mm%%			柱と本文との空き
+  \if@twoside
+%	\advance\oddsidemargin by 16.5mm%		奇数ページの左余白 10mm(小口？)
+%	\advance\evensidemargin by 16.5mm%	偶数ページの左余白 17mm(ノド？)
+  \else% if not twoside
+%	\advance\oddsidemargin by 16.5mm%	ページの左余白 13.5mm
+%	\evensidemargin\oddsidemargin%		不要かも？
+  \fi
+\fi%
+\if@Y@K@%	横組み
+	\textheight=\honbunheight
+	\textwidth=\honbunwidth
+\else%		縦組み
+	\textheight=\honbunwidth
+	\textwidth=\honbunheight
+\fi%
+
+
+\geometry{
+	papersize={\paperwidth,\paperheight},% 		用紙幅,高さ（断裁周囲あり）
+	layoutsize={\shiagariwidth,\shiagariheight},% 		用紙幅,高さ（製本仕上がりサイズ）
+	layoutoffset={\dansaiwidth,\dansaiheight},% 		断裁用ゆとり幅,高さ
+	text={\textwidth,\textheight},% 			テキスト本文高さ,幅（縦書きの時は製本サイズの記述と逆）
+	left=\kobayohaku,% 					木端断裁側の余白
+	headsep=\headsep,%
+	voffset=-20mm,
+	hoffset=2mm,
+	twoside=true,% 				左右レイアウトを完全に鏡対称の別レイアウトにする（縦書きの時は欄外脚注が逆方向になる）
+	asymmetric=true,% 				左右レイアウトを欄外の方向だけ同じにする（縦書きの時は欄外脚注がどちらも下になる）
+	ignorefoot
+}
+
+%% \chapter の設定
+\if@alone@chapter%	章を独立ページにする
+\renewcommand{\tableofcontents}{%	目次を \section*{} に格下げ
+  \if@openright \cleardoublepage \else \clearpage \fi
+  \if@twocolumn\@restonecoltrue\onecolumn
+  \else\@restonecolfalse\fi
+  \thispagestyle{jpl@in}%
+  \section*{\contentsname}%
+	\@mkboth{\contentsname}{\contentsname}%
+  \@starttoc{toc}%
+  \if@restonecol\twocolumn\fi}
+\renewcommand{\chapter}{%	\part の定義から改変
+  \if@openright \cleardoublepage \else \clearpage \fi
+  \thispagestyle{empty}%
+  \if@twocolumn\onecolumn\@tempswatrue\else\@tempswafalse\fi
+  \null\vfil
+  \secdef\@chapter\@schapter}
+\def\@chapter[#1]#2{%
+  \ifnum \c@secnumdepth >\m@ne
+	\refstepcounter{chapter}%
+	\addcontentsline{toc}{chapter}{%
+	  \protect\numberline{\@chapapp\thechapter\@chappos}#1}%
+  \else
+	\addcontentsline{toc}{chapter}{#1}%
+  \fi
+  \markright{#1}%
+  {\if@Y@K@\centering \else\hskip 4zw \fi%
+   \interlinepenalty\@M\reset@font
+   \ifnum \c@secnumdepth >\m@ne
+	 \ifnum \c@@paper=5 \Large \else \ifnum \c@@paper=6 \LARGE \fi\fi%
+	 \prechaptername\thechapter\postchaptername\hskip1zw%
+   \fi
+   \ifnum \c@@paper=5 \Large \else \ifnum \c@@paper=6 \LARGE \fi\fi%
+   #2\par}%
+   \@endchapter}
+\def\@schapter#1{{%
+  \if@Y@K@\centering \else\hskip 4zw \fi%
+  \interlinepenalty\@M\reset@font
+  \ifnum\c@@paper=5 \Large \else\ifnum\c@@paper=6 \LARGE \fi\fi%
+  #1\par}%
+  \@endchapter}
+\def\@endchapter{\vfil\newpage
+   \if@twoside\null\thispagestyle{empty}\newpage\fi
+   \if@tempswa\twocolumn\fi}  
+\else%	章見出しが単独ページで無い場合
+\renewcommand{\chapter}{%
+  \if@openright\cleardoublepage\else\clearpage\fi
+  \thispagestyle{jpl@in}%	chapter のページで柱はページ番号のみ
+  \global\@topnum\z@
+  \@afterindenttrue
+  \secdef\@chapter\@schapter}
+\def\@chapter[#1]#2{%
+  \ifnum \c@secnumdepth >\m@ne
+	\if@mainmatter
+	\refstepcounter{chapter}%
+	\typeout{\@chapapp\space\thechapter\space\@chappos}%
+	\addcontentsline{toc}{chapter}%
+	  {\protect\numberline{\@chapapp\thechapter\@chappos}#1}%
+	\else\addcontentsline{toc}{chapter}{#1}\fi
+  \else
+	\addcontentsline{toc}{chapter}{#1}%
+  \fi
+  \markright{#1}%
+  \addtocontents{lof}{\protect\addvspace{10\p@}}%
+  \addtocontents{lot}{\protect\addvspace{10\p@}}%
+  \@makechapterhead{#2}\@afterheading}
+\def\@makechapterhead#1{\hbox{}%
+  \vskip1\Cvs%					空きも少なく
+  {\parindent\z@
+   \raggedright
+%	\ifnum\c@@paper=5%			文庫本(A6判)
+%		\reset@font\Large%
+%	\else\ifnum\c@@paper=6% 	B6判
+		\reset@font\LARGE%
+%	\fi\fi
+   \ifnum \c@secnumdepth >\m@ne
+	 \setlength\@tempdima{\linewidth}%
+	\if@mainmatter
+	 \setbox\z@\hbox{\@chapapp\thechapter\@chappos\hskip1zw}%
+	 \addtolength\@tempdima{-\wd\z@}%
+	 \unhbox\z@\nobreak
+	\fi
+	 \vtop{\hsize\@tempdima#1}%
+   \else
+	#1\relax
+  \fi}\nobreak\vskip.7\Cvs\setlength{\baselineskip}{6.375mm}%				行送り間隔
+}%		後の空きも少なく
+\def\@makeschapterhead#1{\hbox{}%
+  \vskip1\Cvs%						空きも少なく
+  {\parindent\z@
+   \raggedright
+	\ifnum\c@@paper=5%			文庫本(A6判)
+		\reset@font\Large%
+	\else\ifnum\c@@paper=6% 	B6判
+		\reset@font\LARGE%
+	\fi\fi
+   \setlength\@tempdima{\linewidth}%
+   \vtop{\hsize\@tempdima#1}}\vskip.7\Cvs}% 	後の空きも少なく
+\fi
+
+%%	\section などの設定
+\ifnum\c@@paper=5%				文庫本(A6判)
+\renewcommand{\section}{\@startsection{section}{1}{\z@}%
+   {1.5\Cvs \@plus.5\Cdp \@minus.2\Cdp}%
+   {.5\Cvs \@plus.3\Cdp}%
+   {\reset@font\large}}%		少し小さ目に明朝体で
+\else%
+\ifnum\c@@paper=6%				B6判
+\renewcommand{\section}{\@startsection{section}{1}{\z@}%
+   {1.5\Cvs \@plus.5\Cdp \@minus.2\Cdp}%
+   {.5\Cvs \@plus.3\Cdp}%
+   {\reset@font\Large}}%		少し小さ目で明朝体に
+\fi\fi
+\renewcommand{\subsection}{\@startsection{subsection}{2}{\z@}%
+   {1.5\Cvs \@plus.5\Cdp \@minus.2\Cdp}%
+   {.5\Cvs \@plus.3\Cdp}%
+   {\reset@font\large}}%		見出しの書体は明朝体
+\renewcommand{\subsubsection}{\@startsection{subsubsection}{3}{\z@}%
+   {1.5\Cvs \@plus.5\Cdp \@minus.2\Cdp}%
+   {.5\Cvs \@plus.3\Cdp}%
+   {\reset@font\normalsize}}%	見出しの書体は明朝体
+%	chapter の目次での設定
+\renewcommand*{\l@chapter}[2]{%
+  \ifnum \c@tocdepth >\m@ne
+	\addpenalty{-\@highpenalty}%
+	\addvspace{1.0em \@plus\p@}%
+	\begingroup
+	  \parindent\z@ \rightskip\@pnumwidth \parfillskip-\rightskip
+	  \leavevmode% 目次の書体は明朝体
+	  \setlength\@lnumwidth{4zw}%
+	  \advance\leftskip\@lnumwidth \hskip-\leftskip
+	  #1\nobreak\hfil\nobreak\hbox to\@pnumwidth{\hss#2}\par
+	  \penalty\@highpenalty
+	\endgroup
+  \fi}
+%
+\if@Y@K@\else% 縦組みの場合に目次でリーダーの点を中央に
+\def\@dottedtocline#1#2#3#4#5{\ifnum #1>\c@tocdepth \else
+  \vskip\toclineskip \@plus.2\p@
+  {\leftskip #2\relax \rightskip \@tocrmarg \parfillskip -\rightskip
+    \parindent #2\relax\@afterindenttrue
+   \interlinepenalty\@M
+   \leavevmode
+   \@lnumwidth #3\relax
+   \advance\leftskip \@lnumwidth \hbox{}\hskip -\leftskip
+    {#4}\nobreak\leaders\hbox{$\m@th \mkern \@dotsep mu\cdot\mkern \@dotsep
+       mu$}\hfill \nobreak\hbox to\@pnumwidth{%
+         \hss\reset@font\rmfamily \normalcolor #5}\par}\fi}
+\fi
+%%	 \maketitle の仕様変更
+\if@Y@K@\else% 縦組みの場合
+\if@titlepage
+  \renewcommand{\maketitle}{\begin{titlepage}%
+  \let\footnotesize\small
+  \let\footnoterule\relax
+  \let\footnote\thanks
+  \null\vfil
+%  \vskip 60\p@
+%	{\Large\begin{tabular}[t]{l}\@title\end{tabular}}\par%
+%	\vskip 3em%
+%	\mbox{}\hfill{\large
+%	 \lineskip .75em%
+%	  \begin{tabular}[t]{l}%
+%		\@author
+%	  \end{tabular}}\hfill\mbox{}\par%
+%	  \vskip 1.5em%
+%	\mbox{}\hfill\mbox{}\hfill{\large \@date}\hfill\mbox{}%
+  \vskip 60\p@
+%	\vspace{0.3em}\par
+	{\LARGE\begin{tabular}[t]{l}\bfseries{\@title}\end{tabular}}%\par%
+%	\vskip 3em%
+	\hfill{\Large
+	  \begin{tabular}[t]{l}%
+		\bfseries{\@author}
+	  \end{tabular}}\hfill\mbox{}\par%
+	  \vskip 1.5em%
+	\par
+  \@thanks\vfil\null
+  \end{titlepage}%
+  \setcounter{footnote}{0}%
+  \global\let\thanks\relax
+  \global\let\maketitle\relax
+  \global\let\p@thanks\relax
+  \global\let\@thanks\@empty
+  \global\let\@author\@empty
+  \global\let\@date\@empty
+  \global\let\@title\@empty
+  \global\let\title\relax
+  \global\let\author\relax
+  \global\let\date\relax
+  \global\let\and\relax
+  }%
+\else
+  \renewcommand{\maketitle}{\par
+  \begingroup
+	\renewcommand{\thefootnote}{\fnsymbol{footnote}}%
+	\def\@makefnmark{\hbox{\ifydir $\m@th^{\@thefnmark}$
+	  \else\hbox{\yoko$\m@th^{\@thefnmark}$}\fi}}%
+	 \long\def\@makefntext##1{\parindent 1em\noindent
+	   \hbox to1.8em{\hss$\m@th^{\@thefnmark}$}##1}%
+	\if@twocolumn
+	  \ifnum \col@number=\@ne \@maketitle
+	  \else \twocolumn[\@maketitle]%
+	  \fi
+	\else
+	  \newpage
+	  \global\@topnum\z@   % Prevents figures from going at top of page.
+	  \@maketitle
+	\fi
+	 \thispagestyle{jpl@in}\@thanks
+  \endgroup
+  \setcounter{footnote}{0}%
+  \global\let\thanks\relax
+  \global\let\maketitle\relax
+  \global\let\p@thanks\relax
+  \global\let\@thanks\@empty
+  \global\let\@author\@empty
+  \global\let\@date\@empty
+  \global\let\@title\@empty
+  \global\let\title\relax
+  \global\let\author\relax
+  \global\let\date\relax
+  \global\let\and\relax
+  }
+  \def\@maketitle{%
+  \newpage\null
+  \vskip 2em%
+  \let\footnote\thanks
+	\hspace*{4zw}{\LARGE \@title}\par%
+	\vskip 1.5em%
+	\mbox{}\hfill{\large
+	  \lineskip .5em%
+	  \begin{tabular}[t]{c}%
+		\@author
+	  \end{tabular}}\hfill\mbox{}\par%
+	\vskip 1em%
+	\mbox{}\hfill\mbox{}\hfill{\large \@date}\hfill\mbox{}%
+  \par\vskip 1.5em}
+\fi
+\fi
+%%% 書籍名 偶数ページの柱に出る
+\def\bookname#1{\gdef\b@@kmark{#1}{\@mkboth{#1}{}}\relax}
+%	設定が無い場合にはエラーとする
+\def\b@@kmark{\@latex@error{%
+		書籍名\expandafter\booknameが設定されていません。}\@ehc}
+%	ヘッダー・フッターの基本的な設定
+\def\ps@headnombre{\let\@mkboth\@gobbletwo
+	\let\ps@jpl@in\ps@headnombre
+\if@Y@K@%						横組み
+  \def\@evenhead{\footnotesize\thepage\hfil}%
+  \def\@oddhead{\footnotesize\hfil\thepage}%
+\else%							縦組み
+  \def\@oddhead{\footnotesize\thepage\hfil}%
+  \def\@evenhead{\footnotesize\hfil\thepage}%
+\fi%
+  \let\@oddfoot\@empty\let\@evenfoot\@empty}
+%
+%%% 文庫本風ヘッダー 偶数ページ「書籍名」奇数ページ「章名」
+\def\ps@bunkohead{\let\ps@jpl@in\ps@headnombre%
+  \let\@oddfoot\@empty\let\@evenfoot\@empty
+\if@Y@K@%						横組み
+  \def\@oddhead{\footnotesize\hfil\b@@kmark\hfil\thepage}%
+  \def\@evenhead{\footnotesize\thepage\hfil\rightmark\hfil}%
+\else%							縦組み
+  \def\@oddhead{\footnotesize\thepage\hfil\b@@kmark\hfil}%
+  \def\@evenhead{\footnotesize\hfil\rightmark\hfil\thepage}%
+\fi%
+  \let\@mkboth\@gobbletwo
+  \let\chaptermark\@gobble
+  \let\sectionmark\@gobble}
+%	章番号などは漢数字にする
+\if@Y@K@\else%	縦組の場合
+  \renewcommand{\thepart}{\@Kanji\c@part}
+  \renewcommand{\thechapter}{\@Kanji\c@chapter}
+  \renewcommand{\thesection}{\thechapter・\@Kanji\c@section}
+  \renewcommand{\thesubsection}{\thesection・\@Kanji\c@subsection}
+  \renewcommand{\thesubsubsection}{\thesubsection・\@Kanji\c@subsubsection}
+  \renewcommand{\theparagraph}{\thesubsubsection・\@Kanji\c@paragraph}
+  \renewcommand{\thesubparagraph}{\theparagraph・\@Kanji\c@subparagraph}
+\fi
+%
+%\if@Y@K@\else% 縦組みの場合も奇数ページ起こし
+\def\cleardoublepage{\clearpage\if@twoside
+  \ifodd\c@page\else
+	  \hbox{}\thispagestyle{empty}\newpage
+	  \if@twocolumn\hbox{}\newpage\fi
+  \fi\fi}
+%\fi
+%
+\pagestyle{bunkohead}%	文庫本風のヘッダースタイル
+%
+\def\章番号無{\setcounter{secnumdepth}{-1}}
+%	章番号(「第1章」)を表示しない
+\def\章番号有{\setcounter{secnumdepth}{0}}
+%	章番号(「第1章」)を表示する。節の数字は非表示。
+\def\節番号無{\ifnum\c@secnumdepth>\z@ \setcounter{secnumdepth}{0}\fi}
+%	節の数字を表示しない。
+\def\節番号有{\setcounter{secnumdepth}{1}}
+%	節の番号を表示する。節番号を表示した場合は章番号も表示。
+\章番号有
+%
+
+%% \tcy
+%
+% LaTeXの解説書では、縦中横に\rensujiを使うこととされているが、
+% \rensujiだと無駄なアキが入ってしまいベタ組みできない。
+% そこで、ここでは新たに\tcyを定義する。
+\chardef\nvlsty@zenkakuSpace=\jis"2121\relax
+\def\tcy#1{%
+	\nvlsty@zenkakuSpace\kern-1zw\relax
+	\leavevmode\hbox to 1zw{%
+		\centering\rensuji*{#1}%
+	}%
+	\kern-1zw\nvlsty@zenkakuSpace
+}
+
+%watermarkの設定
+%\renewcommand{\ThisLLCornerWallPaper}[2]{%
+%  \AddToShipoutPicture*{%
+%    \AtPageLowerLeft{%
+%      \parbox[b][\paperwidth][b]{\paperheight}{%       
+%        \vfill%
+%        \includegraphics[height=#1]{#2}%
+%        \vfill%
+%      }
+%    }
+%  }
+%}
+
+%目次の表題を明朝体Largeに変更、行前方の空白を詰める
+%\renewcommand{\cfttoctitlefont}{\Large}
+%\renewcommand{\cftlottitlefont}{\Large}
+%\renewcommand{\cftloftitlefont}{\Large}
+%\renewcommand{\cftaftertoctitle}{\hfill\null}
+%\setlength{\cftbeforetoctitleskip}{0pt}
+%\setlength{\cftbeforelottitleskip}{10pt}
+%\setlength{\cftbeforeloftitleskip}{10pt}
+%\setlength{\cftaftertoctitleskip}{0pt}
+%\setlength{\cftafterlottitleskip}{0pt}
+%\setlength{\cftafterloftitleskip}{0pt}
+
+%部を明朝体に変更、「第N部」にする
+%\renewcommand{\cftpartfont}{\large}
+%\renewcommand{\cftpartpresnum}{第}
+%\renewcommand{\cftpartpresnum}{第}
+%\renewcommand{\cftpartaftersnum}{部\hspace{1em}}
+%\renewcommand{\cftpartaftersnum}{部\hspace{1em}}
+%\renewcommand{\cftpartpagefont}{\large}
+
+%章をnormalsizeに変更、「第N章」にする
+%\setlength{\cftchapnumwidth}{3em}
+%\renewcommand{\cftchapaftersnumb}{\hspace{1em}}
+
+% 背景設定を使えるようにする
+\RequirePackage{ifthen}
+\RequirePackage{calc}
+\RequirePackage{eso-pic}
+\RequirePackage{graphicx}
+
+\providecommand{\LenToUnit}[1]{#1\@gobble}
+
+
+\newlength{\wpXoffset}
+\setlength{\wpXoffset}{\hoffset}
+\newlength{\wpYoffset}
+\setlength{\wpYoffset}{0pt}
+\newlength{\tileXoffset}
+\newlength{\tileYoffset}
+\newlength{\tilewidth}
+\newlength{\tileheight}
+\newlength{\tileX}
+\newlength{\tileY}
+
+\newcommand{\ThisCenterWallPaper}[2]{%
+%\begin{screen}
+\AddToShipoutPicture*{\put(\LenToUnit{\wpXoffset},\LenToUnit{\wpYoffset}){%
+     \parbox[b][\paperheight+33mm]{\paperwidth+33mm}{%       
+       \vfill
+       \centering
+       \includegraphics[width=#1\paperwidth,height=#1\paperheight,%
+                        keepaspectratio]{#2}%
+       \vfill
+     }}}
+%\end{screen}
+}
+
+%
+%% \xobeylines
+%
+% これは、空行をあけなくても段落分けできるようにする工夫。
+% 本文中、\xobeylinesと書けば、空行をあけなくても段落が変わる。
+% \disobeylinesと書けば、LaTeX記法通り、空行をあけないと段落が変わらないようになる。
+%{\catcode`\^^M=\active
+%	\gdef\xobeylines{\catcode`\^^M\active \def^^M{\par\leavevmode}}%
+%	\global\def^^M{\par\leavevmode}%
+%}
+%\def\disobeylines{\catcode`\^^M=5 }
+%\let\disxobeylines=\disobeylines
+%\AtBeginDocument{\xobeylines}%% 本文開始直後から\xobeylinesが適用されるようにする。
+
+
+\endinput
