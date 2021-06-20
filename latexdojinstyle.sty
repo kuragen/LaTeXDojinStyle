@@ -6,9 +6,6 @@
 % もはや発表元の@niftyフォーラムが消滅しておりますので下記をご紹介しておきます)
 % http://irusuka.sakura.ne.jp/archive/2008/06/tex_2.html
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%判型、印刷範囲サイズ設定（分からない人は単位mm指定のままでOK）
-%縦横サイズの入れ替え、変形サイズの設定も可能です。
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newlength{\dansaiwidth}
 \newlength{\dansaiheight}
 \newlength{\shiagariwidth}
@@ -17,14 +14,34 @@
 \newlength{\honbunheight}
 \newlength{\kobayohaku}
 
-\setlength{\paperwidth}{154mm}	% 印刷所から指定された、遊びを含めた原稿指定サイズ幅
-\setlength{\paperheight}{216mm}	% 印刷所から指定された、遊びを含めた原稿指定サイズ高さ
-\setlength{\honbunwidth}{125mm}	% テキスト本文サイズ幅
-\setlength{\honbunheight}{187mm}	% テキスト本文サイズ高さ
-\setlength{\dansaiwidth}{3mm	}	% 断裁用左右余白幅
-\setlength{\dansaiheight}{3mm}	% 断裁用上下余白高さ
-\setlength{\kobayohaku}{9mm}	% 木端側の余白サイズ
-\setlength{\headsep}{3mm}		% 柱と本文との空き
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 判型、印刷範囲サイズ設定（分からない人は単位mm指定のままでOK）
+% 縦横サイズの入れ替え、変形サイズの設定も可能です。
+%
+% 参考仕上がりサイズ：
+% 文庫判(A6,default)				= Width 105 × Height 148 mm
+% 新書判(一般コミック判型)			= Width 103 × Height 182 mm
+% B6判(青年コミック判型)			= Width 128 × Height 182 mm
+% 四六判(吉○弘文館の人物叢書とか)	= Width 128 × Height 188 mm
+% A5判（小さめのマンガ同人誌）		= Width 148 × Height 210 mm
+% B5判（週刊誌とか）				= Width 182 × Height 257 mm
+% AB判（るるぶやまっぷるマガジン）	= Width 210 × Height 257 mm
+% るるぶちいサイズ(B5変型)			= Width 185 × Height 226 mm
+% ことりっぷ(A5変型)				= Width 148 × Height 180 mm
+% 地球の歩き方(A5変型)				= Width 148 × Height 180 mm
+% たびまる(A5変型)					= Width 127 × Height 210 mm
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\setlength{\paperwidth}{111mm}		% 印刷所から指定された、遊びを含めた原稿指定サイズ幅
+\setlength{\paperheight}{154mm}		% 印刷所から指定された、遊びを含めた原稿指定サイズ高さ
+\setlength{\honbunwidth}{96mm}		% テキスト本文サイズ幅
+\setlength{\honbunheight}{133mm}	% テキスト本文サイズ高さ
+\setlength{\dansaiwidth}{3mm}		% 断裁用左右余白幅
+\setlength{\dansaiheight}{3mm}		% 断裁用上下余白高さ
+\setlength{\kobayohaku}{9mm}		% 木端側の余白サイズ
+\setlength{\headsep}{3mm}			% 柱と本文との空き
 \setlength{\headheight}{5mm}		% 柱の高さ
 \setlength{\oddsidemargin}{10mm}	% 奇数頁マージンサイズ
 \evensidemargin\oddsidemargin	% 左右ページで同じ長さのマージンを取る
@@ -46,18 +63,18 @@
 \usepackage{geometry}
 \usepackage[dvipdfmx]{graphicx,xcolor}	% PDF用
 \usepackage{pxatbegshi} % 縦組だとatbegshiでエラーが出るのを回避する
-\usepackage{pxrubrica}	% from http://qiita.com/zr_tex8r/items/42466cbcbeb670a3a2dc 美しい縦書きルビを振るパッケージ
+\usepackage{pxrubrica}	% 美しい縦書きルビを振るパッケージ from http://qiita.com/zr_tex8r/items/42466cbcbeb670a3a2dc
 \usepackage{titlesec}	% 見出しのレイアウト変更を行うパッケージ
-%\usepackage{tocloft}	% 目次の体裁を変更できる
+\usepackage{tocloft}	% 目次の体裁を変更できる
 %\usepackage{wallpaper} % 壁紙を作るやつ
 
-\usepackage{lipsum}	% ダミーテキスト作成パッケージ
+\usepackage{bxjalipsum}	% ダミーテキスト作成パッケージ
 
 %脚注スタイルパッケージ
 \usepackage{pxftnright}	% 縦組みpLaTeX用美しい脚注・傍注パッケージ
 \usepackage{endnotesj}	% 文末脚注スタイル
 \let\footnote=\endnote	% これで脚注が文末脚注になる（傍注の場合は行をコメントアウトでOK）
-\usepackage{warichu}	% 割注利用
+\usepackage{warichu}	% 割注利用 by 藤田眞作氏 from http://xymtex.com/fujitas2/texlatex/tategumi/warichu.sty
 
 %図表・段組等を利用した変形レイアウト作成パッケージ
 \usepackage{wrapfig}	% 図の回り込み用
